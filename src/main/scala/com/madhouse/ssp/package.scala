@@ -53,8 +53,8 @@ package object ssp {
 
   val impClkCount = (status: Int) => {
     status match {
-      case 0 => (1L, 0L)
-      case _ => (0L, 1L)
+      case 0 => (1L, 1L)
+      case _ => (1L, 0L)
     }
   }
 }

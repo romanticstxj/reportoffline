@@ -15,11 +15,18 @@ import scala.collection.mutable.Queue
   *
   */
 object ReportService {
-  val spark = SparkSession.builder.appName(s"Report").master(sparkMaster).getOrCreate()
+  val spark = SparkSession.builder.appName(s"Report-OffLine").master(sparkMaster).getOrCreate()
   spark.sparkContext.hadoopConfiguration.addResource(fs.getConf)
   import spark.implicits._
 
-  def read[T <: SpecificRecordBase](path: String, clazz: Class[T]) = spark.read.avro(path).as(Encoders.bean(clazz))
+  def read[T <: SpecificRecordBase](path: String, clazz: Class[T]) = {
+    val data = spark.read.avro(path).as(Encoders.bean(clazz))
+    clazz match {
+      case ImpressionTrack | ClickTrack =>
+        data.filter("invalid >= 0")
+      case _ => data
+    }
+  }
 
   def write(data: DataFrame, table: String)(func: () => Unit) = {
     func()
@@ -58,7 +65,7 @@ class ReportService(tasks: Queue[Task]) {
     }
 
     val click = read(s"${logPath.mediaBid}/${task.path}", classOf[ClickTrack]) map { r =>
-      ClickRecord(r.getMediaid, r.getAdspaceid, r.getPolicyid, r.getDspid, r.getLocation, impClkCount(r.getStatus), r.getIncome, r.getCost)
+      ClickRecord(r.getMediaid, r.getAdspaceid, r.getPolicyid, r.getDspid, r.getLocation, impClkCount(r.getInvalid), r.getIncome, r.getCost)
     }
 
     def mediaData(df: DataFrame)(cols: Column*) = {
