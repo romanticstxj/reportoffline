@@ -15,7 +15,7 @@ import scala.collection.mutable.Queue
   */
 object ReportService {
   val spark = SparkSession.builder
-    .appName(s"Report-OffLine")
+    .appName(s"Report-Offline")
     .config("spark.debug.maxToStringFields", 128)
     .getOrCreate()
 

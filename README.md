@@ -21,7 +21,6 @@
 #### Config:
 > <pre> 
 > app {
-> 
 >   mysql {
 >     url  = "jdbc:mysql://172.16.25.26:3306/premiummad_dev?useUnicode=true&characterEncoding=utf8&autoReconnect=true"
 >     user = "root"
