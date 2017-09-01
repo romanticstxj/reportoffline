@@ -52,12 +52,12 @@ class ReportService(tasks: Queue[Task]) {
       DspBidRecord(r.getLong(4).toInt, r.getLong(2).toInt, r.getLong(1).toInt, r.getString(6), dspCount(r.getInt(7), r.getInt(9)))
     }
 
-    val impression = read(s"${logPath.impression}/${task.path}") filter { _.getInt(9) > 0 } map { r =>
-      ImpressionRecord(r.getLong(5).toInt, r.getLong(6).toInt, r.getLong(7).toInt, r.getLong(11).toInt, r.getString(14), impClkCount(r.getInt(9)), r.getInt(12), r.getInt(13))
+    val impression = read(s"${logPath.impression}/${task.path}") map { r =>
+      ImpressionRecord(r.getLong(5).toInt, r.getLong(6).toInt, r.getLong(7).toInt, r.getLong(11).toInt, r.getString(14), trackerCountAndMoney(r.getInt(9), r.getInt(12).toLong, r.getInt(13).toLong))
     }
 
-    val click = read(s"${logPath.click}/${task.path}") filter { _.getInt(9) > 0 } map { r =>
-      ClickRecord(r.getLong(5).toInt, r.getLong(6).toInt, r.getLong(7).toInt, r.getLong(12).toInt, r.getString(15), impClkCount(r.getInt(9)), r.getInt(13), r.getInt(14))
+    val click = read(s"${logPath.click}/${task.path}") map { r =>
+      ClickRecord(r.getLong(5).toInt, r.getLong(6).toInt, r.getLong(7).toInt, r.getLong(12).toInt, r.getString(15), trackerCountAndMoney(r.getInt(9), r.getInt(13).toLong, r.getInt(14).toLong))
     }
 
     def mediaData(df: DataFrame)(cols: Column*) = {

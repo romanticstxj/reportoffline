@@ -26,13 +26,13 @@ object DspBidRecord {
 }
 
 object ImpressionRecord {
-  def apply(mediaId: Int, adSpaceId: Int, policyId: Int, dspId: Int, location: String, count: (Long, Long), income: Long, cost: Long) = {
-    new TrackerRecord(mediaId, adSpaceId, policyId, dspId, location, count._1, 0L, count._2, 0L, income, cost)
+  def apply(mediaId: Int, adSpaceId: Int, policyId: Int, dspId: Int, location: String, countAndMoney: (Long, Long, Long, Long)) = {
+    new TrackerRecord(mediaId, adSpaceId, policyId, dspId, location,  countAndMoney._1, 0L, countAndMoney._2, 0L, countAndMoney._3, countAndMoney._4)
   }
 }
 
 object ClickRecord {
-  def apply(mediaId: Int, adSpaceId: Int, policyId: Int, dspId: Int, location: String, count: (Long, Long), income: Long, cost: Long) = {
-    new TrackerRecord(mediaId, adSpaceId, policyId, dspId, location, 0L, count._1, 0L, count._2, income * 1000, cost * 1000)
+  def apply(mediaId: Int, adSpaceId: Int, policyId: Int, dspId: Int, location: String, countAndMoney: (Long, Long, Long, Long)) = {
+    new TrackerRecord(mediaId, adSpaceId, policyId, dspId, location, 0L, countAndMoney._1, 0L, countAndMoney._2, countAndMoney._3 * 1000, countAndMoney._4 * 1000)
   }
 }

@@ -21,10 +21,6 @@ package object ssp {
     Task(day, hour)
   }
 
-  implicit val jLong2Int: java.lang.Long => Int = _.toInt
-
-  implicit val jInt2Long: java.lang.Integer => Long = _.toLong
-
   implicit val str2Hour: String => LocalDateTime = LocalDateTime.parse(_, ofPattern("yyyyMMddHH"))
 
   val dayHour = (ts: Long) => {
@@ -51,10 +47,11 @@ package object ssp {
     }
   }
 
-  val impClkCount = (status: Int) => {
+  val trackerCountAndMoney = (status: Int, income: Long, cost: Long) => {
     status match {
-      case 0 => (1L, 1L)
-      case _ => (1L, 0L)
+      case 0 => (1L, 1L, income, cost)
+      case x if (x > 0) => (1L, 0L, 0L, 0L)
+      case _ => (0L, 0L, 0L, 0L)
     }
   }
 }
