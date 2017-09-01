@@ -14,31 +14,17 @@ import scala.collection.JavaConverters._
 /**
   * Created by Sunxiang on 2017-07-27 09:12.
   */
-object Configure {
+class Configure(file: String) extends Serializable {
 
-  var fs: FileSystem = _
+  val fs: FileSystem = FileSystem.get(new Configuration())
 
-  implicit var config: Config = _
-
-  def initConf(hadoopEnv: String, conf: String) = {
-    logger(s"hadoop env: $hadoopEnv, config path: $conf")
-
-    fs = FileSystem.get {
-      val conf = ConfigFactory.load("hadoop").getConfig(hadoopEnv)
-
-      val configuration = new Configuration()
-      conf.entrySet().iterator().asScala foreach { c =>
-        val key = c.getKey
-        configuration.set(c.getKey, conf.getString(key))
-      }
-      configuration
-    }
-
-    config = if (conf.startsWith("file://")) {
-      ConfigFactory.parseFile(new File(new URI(conf))).getConfig("app")
-    } else {
-      val path = new Path(conf)
-      ConfigFactory.parseReader(new InputStreamReader(fs.open(path, 10240))).getConfig("app")
+  implicit private val config: Config = {
+    logger(s"config file: $file")
+    val uri = new URI(file)
+    uri.getScheme match {
+      case "file" => ConfigFactory.parseFile(new File(uri)).getConfig("app")
+      case "hdfs" => ConfigFactory.parseReader(new InputStreamReader(fs.open(new Path(uri), 10240))).getConfig("app")
+      case _ => throw new IllegalArgumentException(s"unknown config: $file")
     }
   }
 
@@ -54,9 +40,7 @@ object Configure {
     else default
   }
 
-  lazy val sparkMaster = getOrElse("spark.master", "local[*]")
-
-  lazy val jdbcConf = {
+  val jdbcConf = {
     val conf = config.getConfig("mysql")
     val url = conf.getString("url")
     val prop = {
@@ -68,25 +52,25 @@ object Configure {
     JDBCConf(url, prop)
   }
 
-  lazy val logPath = {
+  val logPath = {
     val mediaBid = getOrElse("log.path.media_bid", "/madssp/bidlogs/media_bid")
-    val dspBid = getOrElse("log.path.media_bid", "/madssp/bidlogs/dsp_bid")
-    val impression = getOrElse("log.path.media_bid", "/madssp/bidlogs/impression")
-    val click = getOrElse("log.path.media_bid", "/madssp/bidlogs/click")
+    val dspBid = getOrElse("log.path.dsp_bid", "/madssp/bidlogs/dsp_bid")
+    val impression = getOrElse("log.path.impression", "/madssp/bidlogs/impression")
+    val click = getOrElse("log.path.click", "/madssp/bidlogs/click")
     new LogPath(mediaBid, dspBid, impression, click)
   }
 
-  private lazy val table = config.getConfig("table")
-  lazy val mediaBaseTable = getOrElse("media.base", "mad_report_media")(table)
-  lazy val mediaLocationTable = getOrElse("media.location", "mad_report_media_location")(table)
-  lazy val dspBaseTable = getOrElse("dsp.base", "mad_report_dsp")(table)
-  lazy val dspLocationTable = getOrElse("dsp.location", "mad_report_dsp_location")(table)
-  lazy val dspMediaTable = getOrElse("dsp.media", "mad_report_dsp_media")(table)
-  lazy val policyBaseTable = getOrElse("policy.base", "mad_report_policy")(table)
-  lazy val policyLocationTable = getOrElse("policy.location", "mad_report_policy_location")(table)
+  private val table = config.getConfig("table")
+  val mediaBaseTable = getOrElse("media.base", "mad_report_media")(table)
+  val mediaLocationTable = getOrElse("media.location", "mad_report_media_location")(table)
+  val dspBaseTable = getOrElse("dsp.base", "mad_report_dsp")(table)
+  val dspLocationTable = getOrElse("dsp.location", "mad_report_dsp_location")(table)
+  val dspMediaTable = getOrElse("dsp.media", "mad_report_dsp_media")(table)
+  val policyBaseTable = getOrElse("policy.base", "mad_report_policy")(table)
+  val policyLocationTable = getOrElse("policy.location", "mad_report_policy_location")(table)
 
-  lazy val inserts = config.getStringList("insert").asScala.toList
+  val inserts = config.getStringList("insert").asScala.toList
 
-  lazy val startTask = getOrElse("task.start", "")
-  lazy val endTask= getOrElse("task.end", "")
+  val startTask = getOrElse("task.start", "")
+  val endTask= getOrElse("task.end", "")
 }

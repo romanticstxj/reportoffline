@@ -11,17 +11,16 @@
 >   --total-executor-cores X \
 >   --executor-cores X \
 >   --deploy-mode cluster
->   --class path/to/&lt;application-jar&gt; \
->   &lt;hadoop-env&gt; e.g. develop beta production \
+>   --class com.madhouse.ssp
+>   --conf "spark.cores.max=4" \
+>   --conf "spark.driver.maxResultSize=Xg" \
+>   hdfs://path/to/&lt;application-jar&gt; \
 >   &lt;application-config-path&gt;
 > </pre>
 
 #### Config:
 > <pre> 
 > app {
->   spark {
->     master = "local[*]"
->   }
 > 
 >   mysql {
 >     url  = "jdbc:mysql://172.16.25.26:3306/premiummad_dev?useUnicode=true&characterEncoding=utf8&autoReconnect=true"
@@ -54,6 +53,6 @@
 >     }
 >   }
 >  
->   inserts = ["media", "dsp", "policy"]
+>   insert = ["media", "dsp", "policy"]
 > }
 > </pre>

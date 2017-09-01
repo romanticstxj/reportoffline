@@ -14,7 +14,7 @@ object Dependencies {
   val mysqlConn  = "mysql"              % "mysql-connector-java"      % "5.1.43"       /*% Provided*/
 
   // Projects
-  val rootDeps = Seq(config, sparkSQL, avro/*, sparkAvro*/, hadoopC, mysqlConn)
+  val rootDeps = Seq(config, sparkSQL, avro, sparkAvro, hadoopC, mysqlConn)
 
   // Resolvers
   val rootResolvers = Seq()
