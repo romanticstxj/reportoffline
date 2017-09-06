@@ -4,18 +4,17 @@
 > #####  sbt clean assembly
 
 #### Run:
-> <pre>
+> <pre> 
 > path/to/spark/bin/spark-submit \
 >   --executor-memory Xg \
 >   --driver-memory Xg
 >   --total-executor-cores X \
 >   --executor-cores X \
->   --deploy-mode cluster
->   --class com.madhouse.ssp
->   --conf "spark.cores.max=4" \
->   --conf "spark.driver.maxResultSize=Xg" \
->   hdfs://path/to/&lt;application-jar&gt; \
->   &lt;application-config-path&gt;
+>   --deploy-mode cluster \
+>   --master &lt;master&gt; \
+>   --class com.madhouse.ssp.ReportApp; \
+>   hdfs://XX/path/to/&lt;application&gt;.jar \
+>   hdfs://XX/path/to/&lt;application&gt.conf
 > </pre>
 
 #### Config:
