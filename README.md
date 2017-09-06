@@ -12,7 +12,7 @@
 >   --executor-cores X \
 >   --deploy-mode cluster \
 >   --master &lt;master&gt; \
->   --class com.madhouse.ssp.ReportApp; \
+>   --class com.madhouse.ssp.ReportApp \
 >   hdfs://XX/path/to/&lt;application&gt;.jar \
 >   hdfs://XX/path/to/&lt;application&gt.conf
 > </pre>
