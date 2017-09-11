@@ -53,8 +53,8 @@ class Configure(file: String) extends Serializable {
   }
 
   val logPath = {
-    val mediaBid = getOrElse("log.path.media_bid", "/madssp/bidlogs/media_bid")
-    val dspBid = getOrElse("log.path.dsp_bid", "/madssp/bidlogs/dsp_bid")
+    val mediaBid = getOrElse("log.path.mediabid", "/madssp/bidlogs/mediabid")
+    val dspBid = getOrElse("log.path.dspbid", "/madssp/bidlogs/dspbid")
     val impression = getOrElse("log.path.impression", "/madssp/bidlogs/impression")
     val click = getOrElse("log.path.click", "/madssp/bidlogs/click")
     new LogPath(mediaBid, dspBid, impression, click)

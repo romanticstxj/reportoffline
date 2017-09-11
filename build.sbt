@@ -20,7 +20,7 @@ lazy val reportOffline = (project in file("."))
   
 assemblyJarName in assembly := name.value + "-" + version.value + "-assembly.jar"
 
-mainClass in assembly := Some("com.madhouse.ssp.ReportRT")
+mainClass in assembly := Some("com.madhouse.ssp.ReportApp")
 
 assemblyMergeStrategy in assembly := {
   case PathList(ps @ _*) if ps.last endsWith ".html" => MergeStrategy.first
