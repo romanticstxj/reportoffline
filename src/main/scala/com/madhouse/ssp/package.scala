@@ -4,6 +4,8 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ofPattern
 import java.time.{Instant, LocalDateTime, ZoneId}
 
+import org.apache.spark.sql.Row
+
 /**
   * Created by Sunxiang on 2017-07-27 09:10.
   */
@@ -20,6 +22,19 @@ package object ssp {
     val hour = ldt.format(ofPattern("HH"))
     Task(day, hour)
   }
+
+
+  implicit class ImplicitRow(row: Row) extends Serializable {
+    def getInt(field: String) = row.getAs[Int](field)
+
+    def getLong(field: String) = row.getAs[Long](field)
+
+    def getString(field: String) = row.getAs[String](field)
+  }
+
+  implicit def long2Int: Long => Int = _.toInt
+
+  implicit def int2Long: Int => Long = _.toLong
 
   implicit val str2Hour: String => LocalDateTime = LocalDateTime.parse(_, ofPattern("yyyyMMddHH"))
 

@@ -3,9 +3,8 @@ package com.madhouse.ssp
 import com.databricks.spark.avro._
 import com.madhouse.ssp.entity._
 import com.madhouse.ssp.util.JDBCConf
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql._
-import org.apache.avro.specific.SpecificRecordBase
+import org.apache.spark.sql.functions._
 
 import scala.collection.mutable.Queue
 
@@ -15,11 +14,11 @@ import scala.collection.mutable.Queue
   */
 object ReportService {
   val spark = SparkSession.builder
-    .appName(s"Report-Offline")
+    .appName(s"Report-Offline").master("local[2]")
     .config("spark.debug.maxToStringFields", 128)
     .getOrCreate()
 
-  def read[T <: SpecificRecordBase](path: String) = spark.read.avro(path)
+  def read(path: String) = spark.read.avro(path)
 
   def write(data: DataFrame, table: String, jdbcConf: JDBCConf)(func: () => Unit) = {
     func()
@@ -44,20 +43,20 @@ class ReportService(tasks: Queue[Task]) {
     import configure._
 
     val mediaBid = read(s"${logPath.mediaBid}/${task.path}") map { r =>
-      val request = r.getStruct(8)
-      MediaBidRecord(request.getLong(1).toInt, request.getLong(6).toInt, r.getString(7), mediaCount(r.getInt(4)))
+      val request = r.getAs[Row]("request")
+      MediaBidRecord(request.getLong("mediaid"), request.getLong("adspaceid"), r.getAs[String]("location"), mediaCount(r.getInt("status")))
     }
 
     val dspBid = read(s"${logPath.dspBid}/${task.path}") map { r =>
-      DspBidRecord(r.getLong(4).toInt, r.getLong(2).toInt, r.getLong(1).toInt, r.getString(6), dspCount(r.getInt(7), r.getInt(9)))
+      DspBidRecord(r.getLong("mediaid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("location"), dspCount(r.getInt("status"), r.getInt("winner")))
     }
 
     val impression = read(s"${logPath.impression}/${task.path}") map { r =>
-      ImpressionRecord(r.getLong(5).toInt, r.getLong(6).toInt, r.getLong(7).toInt, r.getLong(11).toInt, r.getString(14), trackerCountAndMoney(r.getInt(9), r.getInt(12).toLong, r.getInt(13).toLong))
+      ImpressionRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
     }
 
     val click = read(s"${logPath.click}/${task.path}") map { r =>
-      ClickRecord(r.getLong(5).toInt, r.getLong(6).toInt, r.getLong(7).toInt, r.getLong(12).toInt, r.getString(15), trackerCountAndMoney(r.getInt(9), r.getInt(13).toLong, r.getInt(14).toLong))
+      ClickRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
     }
 
     def mediaData(df: DataFrame)(cols: Column*) = {
