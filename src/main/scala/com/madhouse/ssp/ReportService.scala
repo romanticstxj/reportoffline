@@ -48,7 +48,7 @@ class ReportService(tasks: Queue[Task]) {
     }
 
     val dspBid = read(s"${logPath.dspBid}/${task.path}") map { r =>
-      DspBidRecord(r.getLong("mediaid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("location"), dspCount(r.getInt("status"), r.getInt("winner")))
+      DspBidRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("location"), dspCount(r.getInt("status"), r.getInt("winner")))
     }
 
     val impression = read(s"${logPath.impression}/${task.path}") map { r =>
@@ -111,16 +111,16 @@ class ReportService(tasks: Queue[Task]) {
 
       if (inserts.contains("dsp") || inserts.contains("policy")) {
         val dspBidData = dspBid
-          .groupBy('mediaId, 'policyId, 'dspId, 'location)
+          .groupBy('mediaId, 'adspaceId, 'policyId, 'dspId, 'location)
           .agg(sum('reqs) as 'reqs, sum('bids) as 'bids, sum('wins) as 'wins, sum('timeouts) as 'timeouts, sum('errs) as 'errs)
 
         val trackerData = trackerBaseData
-          .groupBy('mediaId, 'policyId, 'dspId, 'location)
+          .groupBy('mediaId, 'adspaceId, 'policyId, 'dspId, 'location)
           .agg(sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('income) as 'income, sum('cost) as 'cost)
 
         val baseData = dspBidData.as('d)
-          .join(trackerData.as('t), $"d.mediaId" === $"t.mediaId" and $"d.policyId" === $"t.policyId" and $"d.dspId" === $"t.dspId" and $"d.location" === $"t.location", "outer")
-          .select(coalesce($"d.mediaId", $"t.mediaId") as 'media_id, coalesce($"d.policyId", $"t.policyId") as 'policy_id, coalesce($"d.dspId", $"t.dspId") as 'dsp_id, coalesce($"d.location", $"t.location") as 'location, lit(task.day) as 'date, lit(task.hour.toInt) as 'hour, 'reqs, 'bids, 'wins, 'timeouts, 'errs, 'imps, 'clks, 'vimps, 'vclks, 'income, 'cost)
+          .join(trackerData.as('t), $"d.mediaId" === $"t.mediaId" and $"d.adspaceId" === $"t.adspaceId" and $"d.policyId" === $"t.policyId" and $"d.dspId" === $"t.dspId" and $"d.location" === $"t.location", "outer")
+          .select(coalesce($"d.mediaId", $"t.mediaId") as 'media_id, coalesce($"d.adspaceId", $"t.adspaceId") as 'adspace_id, coalesce($"d.policyId", $"t.policyId") as 'policy_id, coalesce($"d.dspId", $"t.dspId") as 'dsp_id, coalesce($"d.location", $"t.location") as 'location, lit(task.day) as 'date, lit(task.hour.toInt) as 'hour, 'reqs, 'bids, 'wins, 'timeouts, 'errs, 'imps, 'clks, 'vimps, 'vclks, 'income, 'cost)
           .na.fill(0L, Seq("reqs", "bids", "wins", "timeouts", "errs", "imps", "clks", "vimps", "vclks", "income", "cost"))
           .persist()
 
@@ -133,7 +133,7 @@ class ReportService(tasks: Queue[Task]) {
             logger("dsp location report data:")
           }
 
-          write(dspData(baseData)('dsp_id, 'media_id, 'date, 'hour), dspMediaTable, jdbcConf) { () =>
+          write(dspData(baseData)('dsp_id, 'media_id, 'adspace_id, 'date, 'hour), dspMediaTable, jdbcConf) { () =>
             logger("dsp media report data:")
           }
 
@@ -147,6 +147,10 @@ class ReportService(tasks: Queue[Task]) {
 
           write(policyData(baseData)('policy_id, 'dsp_id, 'location, 'date, 'hour), policyLocationTable, jdbcConf) { () =>
             logger("policy location report data:")
+          }
+
+          write(policyData(baseData)('policy_id, 'dsp_id, 'media_id, 'adspace_id, 'date, 'hour), policyMediaTable, jdbcConf) { () =>
+            logger("policy media report data:")
           }
 
           logger(s"save policy data finished\n")

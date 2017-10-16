@@ -68,6 +68,7 @@ class Configure(file: String) extends Serializable {
   val dspMediaTable = getOrElse("dsp.media", "mad_report_dsp_media")(table)
   val policyBaseTable = getOrElse("policy.base", "mad_report_policy")(table)
   val policyLocationTable = getOrElse("policy.location", "mad_report_policy_location")(table)
+  val policyMediaTable = getOrElse("policy.media", "mad_report_policy_media")(table)
 
   val inserts = config.getStringList("insert").asScala.toList
 
