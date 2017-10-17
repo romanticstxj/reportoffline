@@ -52,11 +52,11 @@ class ReportService(tasks: Queue[Task]) {
     }
 
     val impression = read(s"${logPath.impression}/${task.path}") map { r =>
-      ImpressionRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
+      ImpressionRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("campaignId"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
     }
 
     val click = read(s"${logPath.click}/${task.path}") map { r =>
-      ClickRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
+      ClickRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("campaignId"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
     }
 
     def mediaData(df: DataFrame)(cols: Column*) = {
@@ -79,7 +79,7 @@ class ReportService(tasks: Queue[Task]) {
 
     if (inserts.nonEmpty) {
       val trackerBaseData = (impression union click)
-        .groupBy('mediaId, 'adSpaceId, 'policyId, 'dspId, 'location)
+        .groupBy('mediaId, 'adSpaceId, 'policyId, 'dspId, 'campaignId, 'location)
         .agg(sum('imps) as 'imps, sum('clks) as 'clks, sum('vimps) as 'vimps, sum('vclks) as 'vclks, sum('income) as 'income, sum('cost) as 'cost).persist()
 
       if (inserts.contains("media")) {
@@ -135,6 +135,15 @@ class ReportService(tasks: Queue[Task]) {
 
           write(dspData(baseData)('dsp_id, 'media_id, 'adspace_id, 'date, 'hour), dspMediaTable, jdbcConf) { () =>
             logger("dsp media report data:")
+          }
+
+          val trackerData = trackerBaseData
+            .groupBy('dspId, 'campaignId)
+            .agg(sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('cost) as 'cost)
+            .select('dspId as 'dsp_id, 'campaignId as 'campaign_id, lit(task.day) as 'date, lit(task.hour.toInt) as 'hour, 'imps, 'clks, 'vimps, 'clks, 'cost)
+
+          write(trackerData, dspCampaignTable, jdbcConf) { () =>
+            logger("dsp campaign report data:")
           }
 
           logger(s"save dsp data finished\n")

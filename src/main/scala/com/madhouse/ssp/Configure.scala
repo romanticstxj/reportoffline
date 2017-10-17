@@ -66,6 +66,7 @@ class Configure(file: String) extends Serializable {
   val dspBaseTable = getOrElse("dsp.base", "mad_report_dsp")(table)
   val dspLocationTable = getOrElse("dsp.location", "mad_report_dsp_location")(table)
   val dspMediaTable = getOrElse("dsp.media", "mad_report_dsp_media")(table)
+  val dspCampaignTable = getOrElse("dsp.campaign", "mad_report_dsp_campaign")(table)
   val policyBaseTable = getOrElse("policy.base", "mad_report_policy")(table)
   val policyLocationTable = getOrElse("policy.location", "mad_report_policy_location")(table)
   val policyMediaTable = getOrElse("policy.media", "mad_report_policy_media")(table)

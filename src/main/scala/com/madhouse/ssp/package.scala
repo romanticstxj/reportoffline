@@ -30,6 +30,8 @@ package object ssp {
     def getLong(field: String) = row.getAs[Long](field)
 
     def getString(field: String) = row.getAs[String](field)
+
+    def getRow(field: String) = row.getAs[Row](field)
   }
 
   implicit def long2Int: Long => Int = _.toInt
