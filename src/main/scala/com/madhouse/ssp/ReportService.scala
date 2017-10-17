@@ -57,11 +57,11 @@ class ReportService(tasks: Queue[Task]) {
     }
 
     val impression = read(s"${logPath.impression}/${task.path}") map { r =>
-      ImpressionRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("campaignId"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
+      ImpressionRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("cid"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
     }
 
     val click = read(s"${logPath.click}/${task.path}") map { r =>
-      ClickRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("campaignId"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
+      ClickRecord(r.getLong("mediaid"), r.getLong("adspaceid"), r.getLong("policyid"), r.getLong("dspid"), r.getString("cid"), r.getString("location"), trackerCountAndMoney(r.getInt("invalid"), r.getInt("income"), r.getInt("cost")))
     }
 
     def mediaData(df: DataFrame)(cols: Column*) = {
