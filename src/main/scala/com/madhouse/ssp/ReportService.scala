@@ -141,6 +141,7 @@ class ReportService(tasks: Queue[Task]) {
             .groupBy('dspId, 'campaignId)
             .agg(sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('cost) as 'cost)
             .select('dspId as 'dsp_id, 'campaignId as 'campaign_id, lit(task.day) as 'date, lit(task.hour.toInt) as 'hour, 'imps, 'clks, 'vimps, 'clks, 'cost)
+            .na.fill("", Seq("campaign_id"))
 
           write(trackerData, dspCampaignTable, jdbcConf) { () =>
             logger("dsp campaign report data:")
