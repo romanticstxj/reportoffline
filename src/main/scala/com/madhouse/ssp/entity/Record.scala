@@ -9,7 +9,7 @@ trait Record extends Serializable
 
 case class MediaBidRecord(mediaId: Int, adSpaceId: Int, location: String, reqs: Long, bids: Long, errs: Long) extends Record
 
-case class DspBidRecord(mediaId: Int, adspaceId: Int, policyId: Int, dspId: Int, location: String, reqs: Long, bids: Long, wins: Long, timeouts: Long, errs: Long) extends Record
+case class DspBidRecord(mediaId: Int, adspaceId: Int, policyId: Int, dspId: Int, campaignId: String, location: String, reqs: Long, bids: Long, wins: Long, timeouts: Long, errs: Long) extends Record
 
 case class TrackerRecord(mediaId: Int, adSpaceId: Int, policyId: Int, dspId: Int, campaignId: String, location: String, imps: Long, vimps: Long, clks: Long, vclks: Long, income: Long, cost: Long) extends Record
 
@@ -20,8 +20,8 @@ object MediaBidRecord {
 }
 
 object DspBidRecord {
-  def apply(mediaId: Int, adspaceId: Int, policyId: Int, dspId: Int, location: String, count: (Long, Long, Long, Long, Long)) = {
-    new DspBidRecord(mediaId, adspaceId, policyId, dspId, location, count._1, count._2, count._3, count._4, count._5)
+  def apply(mediaId: Int, adspaceId: Int, policyId: Int, dspId: Int, campaignId: String, location: String, count: (Long, Long, Long, Long, Long)) = {
+    new DspBidRecord(mediaId, adspaceId, policyId, dspId, campaignId, location, count._1, count._2, count._3, count._4, count._5)
   }
 }
 
