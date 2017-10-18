@@ -99,7 +99,7 @@ class ReportService(tasks: Queue[Task]) {
         val baseData = mediaBidData.as('m)
           .join(trackerData.as('t), $"m.mediaId" === $"t.mediaId" and $"m.adSpaceId" === $"t.adSpaceId" and $"m.location" === $"t.location", "outer")
           .select(coalesce($"m.mediaId", $"t.mediaId") as 'media_id, coalesce($"m.adSpaceId", $"t.adSpaceId") as 'adspace_id, coalesce($"m.location", $"t.location") as 'location, lit(task.day) as 'date, lit(task.hour.toInt) as 'hour, 'reqs, 'bids, 'errs, 'imps, 'clks, 'vimps, 'vclks, 'income)
-          .na.fill(0L, Seq("bids", "errs", "imps", "clks", "vimps", "vclks", "income"))
+          .na.fill(0L, Seq("reqs", "bids", "errs", "imps", "clks", "vimps", "vclks", "income"))
           .persist()
 
         write(mediaData(baseData)('media_id, 'adspace_id, 'date, 'hour), mediaBaseTable, jdbcConf) { () =>
