@@ -23,7 +23,6 @@ package object ssp {
     Task(day, hour)
   }
 
-
   implicit class ImplicitRow(row: Row) extends Serializable {
     def getInt(field: String) = row.getAs[Int](field)
 
