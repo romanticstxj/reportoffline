@@ -43,12 +43,12 @@ class ReportService(tasks: Queue[Task]) {
     import configure._
 
     val mediaBid = read(s"${logPath.mediaBid}/${task.path}") map { r =>
-      val request = r.getAs[Row]("request")
+      val request = r.getRow("request")
       MediaBidRecord(request.getLong("mediaid"), request.getLong("adspaceid"), r.getAs[String]("location"), mediaCount(r.getInt("status")))
     }
 
     val dspBid = read(s"${logPath.dspBid}/${task.path}") map { r =>
-      val bidResponse = r.getAs[Row]("response")
+      val bidResponse = r.getRow("response")
       val campaignId = {
         val cid = if (bidResponse == null) null else bidResponse.getString("cid")
         if (cid == null) "" else cid
@@ -142,7 +142,7 @@ class ReportService(tasks: Queue[Task]) {
             logger("dsp media report data:")
           }
 
-          write(baseData.filter('bids > 0L).groupBy('dsp_id, 'campaign_id, 'media_id, 'adspace_id, 'date, 'hour).agg(sum('bids) as 'bids, sum('wins) as 'wins, sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('cost) as 'cost), dspCampaignTable, jdbcConf) { () =>
+          write(baseData.filter('bids > 0 || 'wins > 0 || 'imps > 0L || 'clks > 0L).groupBy('dsp_id, 'campaign_id, 'media_id, 'adspace_id, 'date, 'hour).agg(sum('bids) as 'bids, sum('wins) as 'wins, sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('cost) as 'cost), dspCampaignTable, jdbcConf) { () =>
             logger("dsp campaign report data:")
           }
 
