@@ -142,7 +142,7 @@ class ReportService(tasks: Queue[Task]) {
             logger("dsp media report data:")
           }
 
-          write(baseData.filter('bids > 0 || 'wins > 0 || 'imps > 0L || 'clks > 0L).groupBy('dsp_id, 'campaign_id, 'media_id, 'adspace_id, 'date, 'hour).agg(sum('bids) as 'bids, sum('wins) as 'wins, sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('cost) as 'cost), dspCampaignTable, jdbcConf) { () =>
+          write(baseData.filter('bids > 0 || 'imps > 0L || 'clks > 0L).groupBy('dsp_id, 'campaign_id, 'media_id, 'adspace_id, 'date, 'hour).agg(sum('bids) as 'bids, sum('wins) as 'wins, sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('cost) as 'cost), dspCampaignTable, jdbcConf) { () =>
             logger("dsp campaign report data:")
           }
 
