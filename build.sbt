@@ -5,7 +5,7 @@ import CompileOptions._
 lazy val commonSettings = Seq(
   organization := "com.madhouse.ssp",
   name := "report_offline",
-  version := "1.3.0",
+  version := "1.3.1",
   scalaVersion := "2.11.11",
   scalacOptions := scalaCompile,
   javacOptions := javaCompile

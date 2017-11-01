@@ -43,12 +43,12 @@ class ReportService(tasks: Queue[Task]) {
     import configure._
 
     val mediaBid = read(s"${logPath.mediaBid}/${task.path}") map { r =>
-      val request = r.getAs[Row]("request")
+      val request = r.getRow("request")
       MediaBidRecord(request.getLong("mediaid"), request.getLong("adspaceid"), r.getAs[String]("location"), mediaCount(r.getInt("status")))
     }
 
     val dspBid = read(s"${logPath.dspBid}/${task.path}") map { r =>
-      val bidResponse = r.getAs[Row]("response")
+      val bidResponse = r.getRow("response")
       val campaignId = {
         val cid = if (bidResponse == null) null else bidResponse.getString("cid")
         if (cid == null) "" else cid
@@ -116,16 +116,14 @@ class ReportService(tasks: Queue[Task]) {
 
       if (inserts.contains("dsp") || inserts.contains("policy")) {
         val dspBidData = dspBid
-          .groupBy('mediaId, 'adspaceId, 'policyId, 'dspId, 'campaignId, 'location)
+          .groupBy('mediaId, 'adSpaceId, 'policyId, 'dspId, 'campaignId, 'location)
           .agg(sum('reqs) as 'reqs, sum('bids) as 'bids, sum('wins) as 'wins, sum('timeouts) as 'timeouts, sum('errs) as 'errs)
 
         val trackerData = trackerBaseData
-          .groupBy('mediaId, 'adspaceId, 'policyId, 'dspId, 'campaignId, 'location)
-          .agg(sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('income) as 'income, sum('cost) as 'cost)
 
         val baseData = dspBidData.as('d)
-          .join(trackerData.as('t), $"d.mediaId" === $"t.mediaId" and $"d.adspaceId" === $"t.adspaceId" and $"d.policyId" === $"t.policyId" and $"d.dspId" === $"t.dspId" and $"d.campaignId" === $"t.campaignId" and $"d.location" === $"t.location", "outer")
-          .select(coalesce($"d.mediaId", $"t.mediaId") as 'media_id, coalesce($"d.adspaceId", $"t.adspaceId") as 'adspace_id, coalesce($"d.policyId", $"t.policyId") as 'policy_id, coalesce($"d.dspId", $"t.dspId") as 'dsp_id, coalesce($"d.campaignId", $"t.campaignId") as 'campaign_id, coalesce($"d.location", $"t.location") as 'location, lit(task.day) as 'date, lit(task.hour.toInt) as 'hour, 'reqs, 'bids, 'wins, 'timeouts, 'errs, 'imps, 'clks, 'vimps, 'vclks, 'income, 'cost)
+          .join(trackerData.as('t), $"d.mediaId" === $"t.mediaId" and $"d.adSpaceId" === $"t.adSpaceId" and $"d.policyId" === $"t.policyId" and $"d.dspId" === $"t.dspId" and $"d.campaignId" === $"t.campaignId" and $"d.location" === $"t.location", "outer")
+          .select(coalesce($"d.mediaId", $"t.mediaId") as 'media_id, coalesce($"d.adSpaceId", $"t.adSpaceId") as 'adspace_id, coalesce($"d.policyId", $"t.policyId") as 'policy_id, coalesce($"d.dspId", $"t.dspId") as 'dsp_id, coalesce($"d.campaignId", $"t.campaignId") as 'campaign_id, coalesce($"d.location", $"t.location") as 'location, lit(task.date) as 'date, lit(task.hour.toInt) as 'hour, 'reqs, 'bids, 'wins, 'timeouts, 'errs, 'imps, 'clks, 'vimps, 'vclks, 'income, 'cost)
           .na.fill(0L, Seq("reqs", "bids", "wins", "timeouts", "errs", "imps", "clks", "vimps", "vclks", "income", "cost"))
           .persist()
 
@@ -142,7 +140,7 @@ class ReportService(tasks: Queue[Task]) {
             logger("dsp media report data:")
           }
 
-          write(baseData.filter('bids > 0L).groupBy('dsp_id, 'campaign_id, 'media_id, 'adspace_id, 'date, 'hour).agg(sum('bids) as 'bids, sum('wins) as 'wins, sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('cost) as 'cost), dspCampaignTable, jdbcConf) { () =>
+          write(baseData.filter('bids > 0 || 'imps > 0L || 'clks > 0L).groupBy('dsp_id, 'campaign_id, 'media_id, 'adspace_id, 'date, 'hour).agg(sum('bids) as 'bids, sum('wins) as 'wins, sum('imps) as 'imps, sum('vimps) as 'vimps, sum('clks) as 'clks, sum('vclks) as 'vclks, sum('cost) as 'cost), dspCampaignTable, jdbcConf) { () =>
             logger("dsp campaign report data:")
           }
 
