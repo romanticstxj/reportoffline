@@ -123,7 +123,7 @@ class ReportService(tasks: Queue[Task]) {
 
         val baseData = dspBidData.as('d)
           .join(trackerData.as('t), $"d.mediaId" === $"t.mediaId" and $"d.adSpaceId" === $"t.adSpaceId" and $"d.policyId" === $"t.policyId" and $"d.dspId" === $"t.dspId" and $"d.campaignId" === $"t.campaignId" and $"d.location" === $"t.location", "outer")
-          .select(coalesce($"d.mediaId", $"t.mediaId") as 'media_id, coalesce($"d.adSpaceId", $"t.adSpaceId") as 'adspace_id, coalesce($"d.policyId", $"t.policyId") as 'policy_id, coalesce($"d.dspId", $"t.dspId") as 'dsp_id, coalesce($"d.campaignId", $"t.campaignId") as 'campaign_id, coalesce($"d.location", $"t.location") as 'location, lit(task.day) as 'date, lit(task.hour.toInt) as 'hour, 'reqs, 'bids, 'wins, 'timeouts, 'errs, 'imps, 'clks, 'vimps, 'vclks, 'income, 'cost)
+          .select(coalesce($"d.mediaId", $"t.mediaId") as 'media_id, coalesce($"d.adSpaceId", $"t.adSpaceId") as 'adspace_id, coalesce($"d.policyId", $"t.policyId") as 'policy_id, coalesce($"d.dspId", $"t.dspId") as 'dsp_id, coalesce($"d.campaignId", $"t.campaignId") as 'campaign_id, coalesce($"d.location", $"t.location") as 'location, lit(task.date) as 'date, lit(task.hour.toInt) as 'hour, 'reqs, 'bids, 'wins, 'timeouts, 'errs, 'imps, 'clks, 'vimps, 'vclks, 'income, 'cost)
           .na.fill(0L, Seq("reqs", "bids", "wins", "timeouts", "errs", "imps", "clks", "vimps", "vclks", "income", "cost"))
           .persist()
 
